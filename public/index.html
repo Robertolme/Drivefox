@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="styles.css">
+  <title>Subir y Descargar Archivos</title>
+</head>
+<body>
+  <h1>Subir y Descargar Archivos</h1>
+  
+  <h2>Subir un archivo</h2>
+  <form action="/upload" method="POST" enctype="multipart/form-data">
+    <input type="file" name="files" multiple>
+    <button type="submit">Subir archivo</button>
+  </form>
+
+  
+  <h2>Descargar archivos</h2>
+  <ul id="fileList">
+    <!-- Archivos serán listados aquí dinámicamente -->
+  </ul>
+
+<button id="selectAll">Seleccionar Todo</button>
+<button id="deselectAll">Deseleccionar Todo</button>
+<button id="downloadSelected">Descargar Seleccionados</button>
+
+  <script>
+    fetch('/getFiles')
+      .then(response => response.json())
+      .then(files => {
+        const fileList = document.getElementById('fileList');
+        files.forEach(file => {
+          const listItem = document.createElement('li');
+	  
+	const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.name = 'selectedFiles';
+        checkbox.value = file;
+
+          const link = document.createElement('a');
+          link.href = `/download/${file}`;
+          link.textContent = file;
+	
+	 listItem.appendChild(checkbox);
+          listItem.appendChild(link);
+          fileList.appendChild(listItem);
+        });
+// Manejo de los botones
+      const selectAllButton = document.getElementById('selectAll');
+      const deselectAllButton = document.getElementById('deselectAll');
+      const downloadSelectedButton = document.getElementById('downloadSelected');
+      
+      selectAllButton.addEventListener('click', () => {
+        const checkboxes = document.getElementsByName('selectedFiles');
+        checkboxes.forEach(checkbox => {
+          checkbox.checked = true;
+        });
+      });
+      
+      deselectAllButton.addEventListener('click', () => {
+        const checkboxes = document.getElementsByName('selectedFiles');
+        checkboxes.forEach(checkbox => {
+          checkbox.checked = false;
+        });
+      });
+      
+      downloadSelectedButton.addEventListener('click', () => {
+        const checkboxes = document.getElementsByName('selectedFiles');
+        const selectedFiles = Array.from(checkboxes)
+          .filter(checkbox => checkbox.checked)
+          .map(checkbox => checkbox.value);
+        
+        selectedFiles.forEach(file => {
+          window.open(`/download/${encodeURIComponent(file)}`, '_blank');
+        });
+      });
+
+      })
+      .catch(error => console.error('Error al obtener la lista de archivos:', error));
+  </script>
+
+</body>
+</html>
+
